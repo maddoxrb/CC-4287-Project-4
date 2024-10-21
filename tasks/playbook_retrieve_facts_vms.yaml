@@ -1,0 +1,35 @@
+- name: Gather information about all VMs
+  openstack.cloud.server_info:
+    cloud: "{{ cloud_name }}"
+    name: "Team14*"
+  register: vm_info
+
+- name: Print VM Information for Debugging
+  debug:
+    var: vm_info
+
+- name: Extract private IP addresses from the VM info
+  set_fact:
+    vm_private_ips: >-
+      {{
+        vm_info.servers | map(attribute='addresses') |
+        map(attribute='CH-822922-net') |
+        map('first') |
+        map(attribute='addr') | list
+      }}
+
+- name: Update inventory with Cloud VMs IPs
+  lineinfile:
+    path: "./inventory.ini"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^vm1 ansible_host=.*', line: "vm1 ansible_host={{ vm_private_ips[0] }}" }
+    - { regexp: '^vm2 ansible_host=.*', line: "vm2 ansible_host={{ vm_private_ips[1] }}" }
+    - { regexp: '^vm3 ansible_host=.*', line: "vm3 ansible_host={{ vm_private_ips[2] }}" }
+    - { regexp: '^vm4 ansible_host=.*', line: "vm4 ansible_host={{ vm_private_ips[3] }}" }
+
+- name: Print all retrieved private IPs
+  debug:
+    msg: "VM Private IP: {{ item }}"
+  loop: "{{ vm_private_ips }}"

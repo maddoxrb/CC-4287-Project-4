@@ -1,0 +1,44 @@
+---
+- name: "Ensure /opt/kafka directory exists on the VM"
+  become: true
+  file:
+    path: /opt/kafka
+    state: directory
+    owner: "{{ cloud_user }}"
+    group: "{{ cloud_user }}"
+    mode: '0755'
+
+- name: "Download Kafka binary to VM"
+  become: true
+  get_url:
+    url: https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz
+    dest: /tmp/kafka.tgz
+
+- name: "Extract Kafka on the VM"
+  become: true
+  unarchive:
+    src: /tmp/kafka.tgz
+    dest: /opt/kafka
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: "Ensure Kafka directory ownership"
+  become: true
+  file:
+    path: /opt/kafka
+    owner: "{{ cloud_user }}"
+    group: "{{ cloud_user }}"
+    state: directory
+
+- name: "Add Kafka to PATH"
+  become: true
+  lineinfile:
+    path: /etc/profile.d/kafka.sh
+    create: yes
+    line: 'export PATH=$PATH:/opt/kafka/bin'
+
+- name: "Reload profile to include Kafka PATH"
+  become: true
+  shell: "source /etc/profile.d/kafka.sh"
+  args:
+    executable: /bin/bash

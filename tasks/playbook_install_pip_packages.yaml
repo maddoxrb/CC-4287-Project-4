@@ -1,0 +1,13 @@
+---
+- name: "Install Python pip packages"
+  pip:
+    name:
+      - kafka-python
+      - Flask
+      - requests
+      - pymongo
+      - numpy
+      - pandas
+      - torchvision
+      - opencv-python
+    state: present

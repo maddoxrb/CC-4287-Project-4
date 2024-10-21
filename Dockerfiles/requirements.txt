@@ -1,0 +1,8 @@
+torch
+Pillow
+kafka-python
+numpy
+torchvision
+pymongo
+opencv-python
+requests

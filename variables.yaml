@@ -1,0 +1,40 @@
+---
+#
+# Author: Aniruddha Gokhale
+# CS4287/5287 Principles of Cloud Computing
+# Created: Fall 2024
+#
+# Purpose: 
+#    This yaml file declares the different variables. It uses
+#    a Python dictionary syntax
+#
+
+# I have already defined these two variables, which are used
+# in the master playbook.
+# @@ make sure to add the local user's username @@
+local_user: #User
+
+cloud_user: cc  # user on chameleon VMs is cc
+
+
+
+
+# @@ You have to add additional variables here that you need
+#    in the different children playbooks. This could be things
+#    like VM properties such as VM name prefix, the flavor like
+#    m1.medium, project number and all the things you need to
+#    create the VM.
+# @@
+cloud_name: "CH-822922"
+
+vm_image: "CC-Ubuntu22.04"
+
+vm_flavor: "m1.medium"
+
+ssh_key_name: "cckey"
+
+vm_network: "CH-822922-net"
+
+vm_security_groups: "default"
+
+...

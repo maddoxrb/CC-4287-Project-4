@@ -1,0 +1,110 @@
+---
+- name: "Ensure firewalld is started and enabled"
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: "Allow SSH service through firewalld"
+  ansible.posix.firewalld:
+    service: ssh
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow HTTP service through firewalld"
+  ansible.posix.firewalld:
+    service: http
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow custom port 5000 for Docker private registry"
+  ansible.posix.firewalld:
+    port: 5000/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow custom port 9092 for Kafka"
+  ansible.posix.firewalld:
+    port: 9092/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+# Kubernetes required ports
+- name: "Allow port 443 for secure K8s communication"
+  ansible.posix.firewalld:
+    port: 443/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow ports 2379-2381 for K8s API server etcd communication"
+  ansible.posix.firewalld:
+    port: 2379-2381/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 6443 for K8s API server"
+  ansible.posix.firewalld:
+    port: 6443/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 10250 for K8s kubelet"
+  ansible.posix.firewalld:
+    port: 10250/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 10256 for K8s kube proxy"
+  ansible.posix.firewalld:
+    port: 10256/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 10257 for K8s controller"
+  ansible.posix.firewalld:
+    port: 10257/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 10259 for K8s scheduler"
+  ansible.posix.firewalld:
+    port: 10259/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 8285 for Flannel VXLAN (UDP)"
+  ansible.posix.firewalld:
+    port: 8285/udp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port 8472 for Flannel (UDP)"
+  ansible.posix.firewalld:
+    port: 8472/udp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Allow port range 3000-30100 for applications"
+  ansible.posix.firewalld:
+    port: 3000-30100/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
+
+- name: "Reload firewalld to apply changes"
+  ansible.builtin.systemd:
+    name: firewalld
+    state: reloaded

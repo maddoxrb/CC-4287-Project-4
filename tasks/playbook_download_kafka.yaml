@@ -1,0 +1,16 @@
+---
+- name: "Download Kafka tarball"
+  get_url:
+    url:  https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz
+    dest: /tmp/kafka.tgz
+    mode: '0755'
+
+- name: "Verify the Kafka tarball exists"
+  stat:
+    path: /tmp/kafka.tgz
+  register: kafka_tarball
+
+- name: "Notify if Kafka tarball download was successful"
+  debug:
+    msg: "Kafka tarball successfully downloaded at /tmp/kafka.tgz"
+  when: kafka_tarball.stat.exists

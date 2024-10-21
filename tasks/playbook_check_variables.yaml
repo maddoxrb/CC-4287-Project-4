@@ -1,0 +1,40 @@
+---
+- name: "Ensure local_user is defined"
+  fail:
+    msg: "The variable 'local_user' is not defined!"
+  when: local_user is not defined
+
+- name: "Ensure cloud_user is defined"
+  fail:
+    msg: "The variable 'cloud_user' is not defined!"
+  when: cloud_user is not defined
+
+- name: "Ensure cloud_name is defined"
+  fail:
+    msg: "The variable 'cloud_name' is not defined!"
+  when: cloud_name is not defined
+
+- name: "Ensure vm_image is defined"
+  fail:
+    msg: "The variable 'vm_image' is not defined!"
+  when: vm_image is not defined
+
+- name: "Ensure vm_flavor is defined"
+  fail:
+    msg: "The variable 'vm_flavor' is not defined!"
+  when: vm_flavor is not defined
+
+- name: "Ensure ssh_key_name is defined"
+  fail:
+    msg: "The variable 'ssh_key_name' is not defined!"
+  when: ssh_key_name is not defined
+
+- name: "Ensure vm_network is defined"
+  fail:
+    msg: "The variable 'vm_network' is not defined!"
+  when: vm_network is not defined
+
+- name: "Ensure vm_security_groups is defined"
+  fail:
+    msg: "The variable 'vm_security_groups' is not defined!"
+  when: vm_security_groups is not defined

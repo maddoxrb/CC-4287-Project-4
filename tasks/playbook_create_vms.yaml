@@ -1,0 +1,52 @@
+---
+- name: "Create VM 1 on Chameleon"
+  openstack.cloud.server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: "Team14-vm1"
+    image: "{{ vm_image }}"
+    flavor: "{{ vm_flavor }}"
+    key_name: "{{ ssh_key_name }}"
+    network: "{{ vm_network }}"
+    security_groups: "{{ vm_security_groups }}"
+    auto_ip: false
+  register: vm1_info
+
+- name: "Create VM 2 on Chameleon"
+  openstack.cloud.server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: "Team14-vm2"
+    image: "{{ vm_image }}"
+    flavor: "{{ vm_flavor }}"
+    key_name: "{{ ssh_key_name }}"
+    network: "{{ vm_network }}"
+    security_groups: "{{ vm_security_groups }}"
+    auto_ip: false
+  register: vm2_info
+
+- name: "Create VM 3 on Chameleon"
+  openstack.cloud.server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: "Team14-vm3"
+    image: "{{ vm_image }}"
+    flavor: "{{ vm_flavor }}"
+    key_name: "{{ ssh_key_name }}"
+    network: "{{ vm_network }}"
+    security_groups: "{{ vm_security_groups }}"
+    auto_ip: false
+  register: vm3_info
+
+- name: "Create VM 4 on Chameleon"
+  openstack.cloud.server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: "Team14-vm4"
+    image: "{{ vm_image }}"
+    flavor: "{{ vm_flavor }}"
+    key_name: "{{ ssh_key_name }}"
+    network: "{{ vm_network }}"
+    security_groups: "{{ vm_security_groups }}"
+    auto_ip: false
+  register: vm4_info
