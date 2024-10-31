@@ -1,4 +1,4 @@
-# CC-4278 Project 2 - Code Artifacts
+# CC-4278 Project 3 - Code Artifacts
 **Team 14:** Maddox, Abhay, Emma
 
 **LINK TO VIDEO** https://drive.google.com/file/d/1Z0Qeu5lTZHCjUctWOh7lLqmAqzNxsXGG/view?usp=sharing
