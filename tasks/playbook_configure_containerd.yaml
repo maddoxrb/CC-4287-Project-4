@@ -1,0 +1,19 @@
+---
+- name: "Generate default containerd config"
+  shell: |
+    containerd config default > config.toml
+    cp config.toml /etc/containerd/config.toml
+
+- name: "Modify containerd config for systemdCgroup"
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^(\s*SystemdCgroup\s*=\s*)false'
+    line: '    SystemdCgroup = true'
+
+- name: "Add private registry to containerd config"
+  blockinfile:
+    path: /etc/containerd/config.toml
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.5.211:5000"]
+        endpoint = ["http://192.168.5.50:5000"]

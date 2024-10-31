@@ -1,0 +1,10 @@
+---
+- name: "Restart containerd service"
+  systemd:
+    name: containerd
+    state: restarted
+
+- name: "Restart Docker service"
+  systemd:
+    name: docker
+    state: restarted

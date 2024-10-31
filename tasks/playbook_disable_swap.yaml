@@ -1,0 +1,9 @@
+---
+- name: "Turn off swap"
+  command: swapoff -a
+
+- name: "Ensure swap is off on reboot"
+  replace:
+    path: /etc/fstab
+    regexp: '^\s*swap\s'
+    replace: '#swap is disabled for Kubernetes'

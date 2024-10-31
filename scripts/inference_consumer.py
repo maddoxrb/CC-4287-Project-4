@@ -11,22 +11,27 @@
 import json
 import requests
 from kafka import KafkaConsumer, KafkaProducer
+import os
+
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'kafka-service:9092')
+IOT_IMAGES_TOPIC = os.environ.get('IOT_IMAGES_TOPIC', 'iot-images')
+INFERENCE_RESULT_TOPIC = os.environ.get('INFERENCE_RESULT_TOPIC', 'inference-result')
+ML_SERVER_URL = os.environ.get('ML_SERVER_URL', 'http://ml-inference-service:5000/infer')
 
 # Kafka Consumer Configuration
 consumer = KafkaConsumer(
-    'iot-images',
-    bootstrap_servers='192.168.5.241:9092',
+    IOT_IMAGES_TOPIC,
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_deserializer=lambda v: json.loads(v.decode('utf-8'))
 )
 
 # Kafka Producer Configuration for inferences
 producer = KafkaProducer(
-    bootstrap_servers='192.168.5.241:9092',
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_serializer=lambda v: json.dumps(v).encode('utf-8'),
     acks=1
 )
 
-ML_SERVER_URL = 'http://192.168.5.152:5000/infer'
 
 for msg in consumer:
     message = msg.value

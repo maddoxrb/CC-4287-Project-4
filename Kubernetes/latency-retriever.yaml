@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: latency-pod
+  namespace: default
+spec:
+  containers:
+  - name: latency-container
+    image: busybox
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - mountPath: "/data/latency"  # This is where the PVC will be mounted inside the container
+      name: latency-storage
+  volumes:
+  - name: latency-storage
+    persistentVolumeClaim:
+      claimName: latency-pvc

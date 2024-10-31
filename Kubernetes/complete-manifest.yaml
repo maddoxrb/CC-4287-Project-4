@@ -1,0 +1,290 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: default
+  labels:
+    app: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: default
+  labels:
+    app: zookeeper
+spec:
+  ports:
+    - port: 2181
+      targetPort: 2181
+  selector:
+    app: zookeeper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: default
+  labels:
+    app: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: bitnami/kafka:latest
+          ports:
+            - containerPort: 9092
+          env:
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:2181"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-service:9092"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:9092"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: default
+  labels:
+    app: kafka
+spec:
+  ports:
+    - port: 9092
+      targetPort: 9092
+  selector:
+    app: kafka
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: default
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-persistent-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  namespace: default
+  labels:
+    app: mongodb
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-inference-server
+  namespace: default
+  labels:
+    app: ml-inference-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-inference-server
+  template:
+    metadata:
+      labels:
+        app: ml-inference-server
+    spec:
+      containers:
+        - name: ml-inference-server
+          image: 192.168.5.50:5000/ml:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: KAFKA_TOPIC
+              value: "inference-result"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-inference-service
+  namespace: default
+  labels:
+    app: ml-inference-server
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: ml-inference-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-consumer
+  namespace: default
+  labels:
+    app: db-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-consumer
+  template:
+    metadata:
+      labels:
+        app: db-consumer
+    spec:
+      containers:
+        - name: db-consumer
+          image: 192.168.5.50:5000/db-consumer:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: IOT_IMAGES_TOPIC
+              value: "iot-images"
+            - name: INFERENCES_TOPIC
+              value: "inferences"
+            - name: MONGO_URI
+              value: "mongodb://mongo-service:27017"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-consumer
+  namespace: default
+  labels:
+    app: inference-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-consumer
+  template:
+    metadata:
+      labels:
+        app: inference-consumer
+    spec:
+      containers:
+        - name: inference-consumer
+          image: 192.168.5.50:5000/consumer:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: IOT_IMAGES_TOPIC
+              value: "iot-images"
+            - name: INFERENCE_RESULT_TOPIC
+              value: "inference-result"
+            - name: ML_SERVER_URL
+              value: "http://ml-inference-service:5000/infer"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-producer-job
+  namespace: default
+  labels:
+    app: producer
+spec:
+  parallelism: 4  # Number of concurrent pods
+  completions: 4  # Total pods to run
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+        - name: producer
+          image: 192.168.5.50:5000/producer:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: IOT_IMAGES_TOPIC
+              value: "iot-images"
+            - name: INFERENCE_RESULT_TOPIC
+              value: "inference-result"
+            - name: PRODUCER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name  # Uses the pod's name as producer_id
+          volumeMounts:
+            - name: latency-storage
+              mountPath: /latency-results  # Directory inside the container
+      volumes:
+        - name: latency-storage
+          persistentVolumeClaim:
+            claimName: latency-pvc
+      restartPolicy: Never
+  backoffLimit: 4

@@ -12,19 +12,24 @@ import json
 from kafka import KafkaConsumer
 from pymongo import MongoClient
 import base64
+import os
+
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'kafka-service:9092')
+IOT_IMAGES_TOPIC = os.environ.get('IOT_IMAGES_TOPIC', 'iot-images')
+INFERENCES_TOPIC = os.environ.get('INFERENCES_TOPIC', 'inferences')
+MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://mongo-service:27017')
 
 # Kafka Consumer Configuration for both topics
 consumer = KafkaConsumer(
-    'iot-images', 'inferences', 
-    bootstrap_servers='192.168.5.241:9092', 
+    IOT_IMAGES_TOPIC, INFERENCES_TOPIC,
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_deserializer=lambda v: json.loads(v.decode('utf-8'))
 )
 
+mongo_client = MongoClient(MONGO_URI)
 
-mongo_client = MongoClient('mongodb://192.168.5.4:27017')
-
-db = mongo_client['iot_database'] 
-collection = db['images'] 
+db = mongo_client['iot_database']
+collection = db['images']
 
 
 pending_inferences = {}
@@ -46,19 +51,19 @@ for msg in consumer:
             document = {
                 'ID': image_id,
                 'GroundTruth': ground_truth,
-                'Data': image_base64,  
+                'Data': image_base64,
                 'InferredValue': pending_inferences.pop(image_id)
             }
             collection.insert_one(document)
-            print(f"Stored image {image_id} with ground truth '{ground_truth}' and inference into MongoDB") 
+            print(f"Stored image {image_id} with ground truth '{ground_truth}' and inference into MongoDB")
         else:
 
             # Store image data without inference
             document = {
                 'ID': image_id,
                 'GroundTruth': ground_truth,
-                'Data': image_base64,  
-                'InferredValue': None 
+                'Data': image_base64,
+                'InferredValue': None
             }
             collection.insert_one(document)
             print(f"Stored image {image_id} with ground truth '{ground_truth}' into MongoDB")

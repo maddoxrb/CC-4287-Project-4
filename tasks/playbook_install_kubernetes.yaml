@@ -1,0 +1,33 @@
+---
+- name: "Create keyrings directory for Kubernetes"
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: "Add Kubernetes GPG key"
+  apt_key:
+    url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+    state: present
+    keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: "Add Kubernetes APT repository"
+  apt_repository:
+    repo: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /'
+    filename: 'kubernetes'
+
+- name: "Update APT repositories after adding Kubernetes repository"
+  apt:
+    update_cache: yes
+
+- name: "Install Kubernetes packages (kubelet, kubeadm, kubectl)"
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    force_apt_get: yes
+
+- name: "Hold Kubernetes packages at their current version"
+  command: apt-mark hold kubelet kubeadm kubectl

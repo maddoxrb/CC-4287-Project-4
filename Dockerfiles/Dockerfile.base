@@ -1,0 +1,10 @@
+# Base Dockerfile for shared Python dependencies
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Tag this image as 'python-base'
+# Build this image with: docker build -t python-base -f Dockerfile.base .

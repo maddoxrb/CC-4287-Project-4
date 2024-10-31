@@ -16,10 +16,11 @@ workloads = {
     1: ['producer_latencies/producer_1_1'],
     2: ['producer_latencies/producer_1_2', 'producer_latencies/producer_2_2'],
     3: ['producer_latencies/producer_1_3', 'producer_latencies/producer_2_3', 'producer_latencies/producer_3_3'],
-    4: ['producer_latencies/producer_1_4', 'producer_latencies/producer_2_4', 'producer_latencies/producer_3_4', 'producer_latencies/producer_4_4']
+    4: ['producer_latencies/producer_1_4', 'producer_latencies/producer_2_4', 'producer_latencies/producer_3_4', 'producer_latencies/producer_4_4'],
+    5: ['producer_latencies/producer_1_5', 'producer_latencies/producer_2_5', 'producer_latencies/producer_3_5', 'producer_latencies/producer_4_5', 'producer_latencies/producer_5_5' ]
 }
 
-colors = ['blue', 'green', 'red', 'orange']
+colors = ['blue', 'green', 'red', 'orange', 'black']
 
 # Plot CDF for each workload
 def plot_cdf_for_workload(num_producers, producer_ids):
@@ -30,7 +31,7 @@ def plot_cdf_for_workload(num_producers, producer_ids):
         latency_results = []
 
         # Read latency data from file
-        filename = f'{producer_id}.txt'
+        filename = f'{producer_id}'
         try:
             with open(filename, 'r') as f:
                 for line in f:

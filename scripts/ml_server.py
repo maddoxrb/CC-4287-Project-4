@@ -1,31 +1,30 @@
 # ml_server.py
-# 
+#
 # Author: Team 14 (Maddox, Emma, Abhay)
 # CS4287-5287: Principles of Cloud Computing, Vanderbilt University
 #
 # Created: Sept 18, 2024
 #
-# Purpose: Processes images passed fom inference_consumer.py and uses a pretrrained model to classify the image.
-# Returns the predicted class label to inference_consumer.py to be stored in the database
-#
+# Purpose: Processes images passed from iot_producer.py, uses a pretrained model to classify the image.
+# Returns the predicted class label to the producer to be sent to the 'inference-result' topic.
 
 from flask import Flask, request, jsonify
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 import io
-import time
 import json
-import random
-import torchvision
-import torchvision.transforms as transforms
+import base64
 from kafka import KafkaProducer
-import numpy as np
-
+import os
 
 app = Flask(__name__)
+
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'kafka-service:9092')
+INFERENCE_RESULT_TOPIC = os.environ.get('INFERENCE_RESULT_TOPIC', 'inference-result')
+
 producer = KafkaProducer(
-    bootstrap_servers="192.168.5.241:9092", 
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_serializer=lambda v: json.dumps(v).encode('utf-8'),
     acks=1
 )
@@ -146,12 +145,26 @@ cifar100_labels = {
 
 @app.route('/infer', methods=['POST'])
 def infer():
-    image_bytes = request.data
-    image = Image.open(io.BytesIO(image_bytes))
+    data = request.get_json()
+    msg_id = data.get('ID') 
+    data_str = data.get('Data')
+
+    if not msg_id or not data_str:
+        return jsonify({'error': 'Missing ID or Data field'}), 400
+
+    try:
+        image_bytes = base64.b64decode(data_str)
+    except base64.binascii.Error as e:
+        return jsonify({'error': 'Invalid Base64 encoding'}), 400
+
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+    except IOError:
+        return jsonify({'error': 'Invalid image data'}), 400
 
     # Apply the transform
     image = transform(image)
-    image = image.unsqueeze(0)  
+    image = image.unsqueeze(0)
 
     # Pass through the model
     with torch.no_grad():
@@ -161,109 +174,19 @@ def infer():
     _, predicted = outputs.max(1)
     predicted_label = cifar100_labels[int(predicted.item())]
 
-    print(predicted_label)
+    print(f"Predicted label for {msg_id}: {predicted_label}")
 
-    index = random.randint(0, 999999)
-
-    # Create message
-    msg_id = index
+    # Create message preserving the original ID
     message = {
-        "ID": msg_id,
+        "ID": msg_id,  # Use the original ID from the producer
         "Inference": predicted_label
     }
 
     # Send the message to Kafka
-    producer.send("inference-result", value=message)
+    producer.send(INFERENCE_RESULT_TOPIC, value=message)
     producer.flush()
 
-    
     return jsonify({'inference': predicted_label})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import time
-import json
-import requests 
-from kafka import KafkaConsumer, KafkaProducer
-
-# Kafka Consumer Configuration 
-consumer = KafkaConsumer(
-    'iot-images',
-    bootstrap_servers='192.168.5.226:9092', 
-    value_deserializer=lambda v: json.loads(v.decode('utf-8'))
-)
-
-# Kafka Producer Configuration for inferences
-producer = KafkaProducer(
-    bootstrap_servers='192.168.5.226:9092',  
-    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-    acks=1
-)
-
-
-ML_SERVER_URL = 'http://192.168.5.193:5000/infer' 
-
-
-for msg in consumer:
-    message = msg.value
-    image_bytes = message['Data'].encode('latin1')  
-    
-    
-    print(f"Image {message['ID']} ground truth: {message['GroundTruth']}")
-
-    # Send image to ML server for labeling
-    response = requests.post(ML_SERVER_URL, data=image_bytes)
-    
-    # Print the response from the ML server
-    if response.status_code == 200:
-        inferred_value = response.json()['inference']
-        print(f"Image {message['ID']} retrieved and labeled as: {inferred_value}")
-        
-        # Create new message for the 'inferences' topic
-        inference_message = {
-            'ID': message['ID'],
-            'GroundTruth': message['GroundTruth'],
-            'InferredValue': inferred_value
-        }
-
-        # Send the inference to the 'inferences' Kafka topic
-        producer.send('inferences', value=inference_message)
-        print(f"Inference for image {message['ID']} sent to Kafka 'inferences' topic")
-    else:
-        print(f"Failed to retrieve label for image {message['ID']}")
-
-consumer.close()

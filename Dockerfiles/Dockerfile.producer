@@ -1,0 +1,17 @@
+FROM python-base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+COPY . .
+
+EXPOSE 5000
+
+# Runs a Generic IOT Producer & Latency Consumer Indefinitely
+CMD ["python", "iot_producer.py"]

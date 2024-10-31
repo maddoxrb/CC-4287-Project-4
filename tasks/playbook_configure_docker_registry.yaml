@@ -1,0 +1,23 @@
+- name: "Ensure Docker service is running"
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: "Create daemon.json for private registry"
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+          "exec-opts": ["native.cgroupdriver=systemd"],
+          "log-driver": "json-file",
+          "log-opts": {
+              "max-size": "100m"
+          },
+          "storage-driver": "overlay2",
+          "insecure-registries" : ["192.168.5.50:5000"]
+      }
+
+- name: "Run private Docker registry"
+  shell: |
+    docker run -d -p 5000:5000 --restart always --name TheRegistry registry:2

@@ -12,7 +12,7 @@
 # I have already defined these two variables, which are used
 # in the master playbook.
 # @@ make sure to add the local user's username @@
-local_user: #User
+local_user: Maddox
 
 cloud_user: cc  # user on chameleon VMs is cc
 
