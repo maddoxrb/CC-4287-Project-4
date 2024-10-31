@@ -70,26 +70,27 @@
 
 ---
 
-## `zookeeper pod`
-- **Functionality:**
-  - Runs zookeeper deployment and service
-
 ## Latency Experiment Results
 - **One Producer:**
-  - ![](one_producer.png)
-  - 90th Percentile: 0.033654403686523435 seconds
-  - 95th Percentile: 0.03422412872314453 seconds
+  - ![](Figure_1.png)
+  - 90th percentile average latency: 0.03151 seconds
+  - 95th percentile average latency: 0.0335 seconds
 - **Two Producers:**
-  - ![](two_producers.png)
-  - 90th Percentile: 0.03592007637023923 seconds
-  - 95th Percentile: 0.036828224658966076 seconds
+  - ![](Figure_2.png)
+  - 90th percentile average latency: 0.053710000000000015 seconds
+  - 95th percentile average latency: 0.056805 seconds
 - **Three Producers:**
-  - ![](three_producers.png)
-  - 90th Percentile: 0.04648351669311524 seconds
-  - 95th Percentile: 0.05048568248748779 seconds
+  - ![](Figure_3.png)
+  - 90th percentile average latency: 0.04960999999999999 seconds
+  - 95th percentile average latency: 0.05270499999999997 seconds
 - **Four Producers:**
-  - ![](four_producers.png)
-  - 90th Percentile: 0.050330934524536144 seconds
-  - 95th Percentile: 0.05347300014495849 seconds
+  - ![](Figure_4.png)
+  - 90th percentile average latency: 0.08731 seconds
+  - 95th percentile average latency: 0.09490499999999998 seconds
+- **Five Producers:**
+  - ![](Figure_5.png)
+  - 90th percentile average latency: 0.08583000000000011 seconds
+  - 95th percentile average latency: 0.10900500000000002 seconds
+
 
 - The results of this experiment shows that increasing the number of producers interacting with our distributed system does indeed increase the latency between request and response for producers. While the increase is marginal, if we were to expand this to a larger number of VMs there would be a signifcant impact on latency
