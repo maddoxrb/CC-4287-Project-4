@@ -4,6 +4,8 @@
 **LINK TO VIDEO** [https://drive.google.com/file/d/1VrAJHGMB7ZBzB0UIkqDfDfdFR9PfvGsq/view?usp=sharing](https://drive.google.com/file/d/1VrAJHGMB7ZBzB0UIkqDfDfdFR9PfvGsq/view?usp=sharing)
 
 
+
+## Set-up Information From PA3
 ![System Architecture](PA3_Layout.png)
 
 ## Virtual Machine 1: Master Node
