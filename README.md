@@ -5,7 +5,7 @@
 
 
 
-## Set-up Information From PA3
+## Set-up Information From PA3 ⬇️
 ![System Architecture](PA3_Layout.png)
 
 ## Virtual Machine 1: Master Node
